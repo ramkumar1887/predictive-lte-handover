@@ -1,0 +1,26 @@
+# Build directories
+build/
+bin/
+lib/
+out/
+
+# Visual Studio / MSVC artifacts
+.vs/
+*.obj
+*.exe
+*.lib
+*.pdb
+*.ilk
+*.tlog
+*.idb
+*.ipch
+*.recipe
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+
+# IDE
+.vscode/
+.idea/

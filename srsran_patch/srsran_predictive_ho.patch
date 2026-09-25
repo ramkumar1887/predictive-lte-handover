@@ -1,0 +1,42 @@
+--- a/srsenb/src/stack/rrc/rrc_ue.h
++++ b/srsenb/src/stack/rrc/rrc_ue.h
+@@ -28,6 +28,7 @@
+ #include "srsenb/hdr/stack/rrc/rrc_mobility.h"
++#include "rrc_predictive_ho.h"
+
+ namespace srsenb {
+
+@@ -145,6 +146,8 @@ public:
+   void handle_measurement_report(const asn1::rrc::meas_results_s& meas_results);
+
+ private:
++  RrcPredictiveHoEvaluator predictive_ho_evaluator;
++  bool enable_predictive_ho = false;
+   uint32_t rnti = 0;
+ };
+
+--- a/srsenb/src/stack/rrc/rrc_ue.cc
++++ b/srsenb/src/stack/rrc/rrc_ue.cc
+@@ -210,6 +210,23 @@ void rrc_ue::handle_measurement_report(const asn1::rrc::meas_results_s& meas_re
+   // Feed measurement into predictive evaluator
+   if (meas_results.meas_result_neigh_cells.present() == asn1::rrc::meas_results_s::meas_result_neigh_cells_c_::types_opts::meas_result_list_eutra) {
++    const auto& neigh = meas_results.meas_result_neigh_cells.meas_result_list_eutra()[0];
++    float s_rsrp = meas_results.meas_result_pcell.rsrp_result - 140.0f;
++    float n_rsrp = neigh.meas_result.rsrp_result - 140.0f;
++    double now_s = srsran::get_timestamp().to_seconds();
++    predictive_ho_evaluator.add_report(now_s, s_rsrp, n_rsrp, neigh.phys_cell_id);
++
++    uint32_t target_pci = 0;
++    double pred_crossover = 0.0;
++    if (predictive_ho_evaluator.should_trigger(3.0f, target_pci, pred_crossover)) {
++      rrc_logger.info("PREDICTIVE HANDOVER: Triggering early handover to PCI=%u (projected crossover in %.3fs)",
++                      target_pci, pred_crossover);
++      start_ho(target_pci);
++      predictive_ho_evaluator.reset();
++      return;
++    }
++  }
++
+   // Fallback to stock 3GPP Event A3 evaluation
+   evaluate_meas_report_stock_a3(meas_results);
+ }
