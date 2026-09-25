@@ -133,8 +133,10 @@ predictive-lte-handover/
 │   └── rsrp_comparison_Boundary_Oscillation.png
 ├── results/                    # Exported simulation CSV traces
 ├── scripts/
+│   ├── dashboard.py            # Streamlit interactive application-layer telemetry UX
 │   ├── plot_results.py         # Matplotlib comparative plotting engine
 │   └── setup_wsl_srsran.sh     # Ubuntu / WSL2 one-click setup script
+├── app.py                      # Root launcher for Streamlit dashboard
 ├── CMakeLists.txt
 ├── build.bat                   # Windows MSVC/Visual Studio 2022 build script
 └── build.sh                    # Linux / WSL2 GCC build script
@@ -144,18 +146,24 @@ predictive-lte-handover/
 
 ## ⚡ How to Build & Run Locally
 
-### 1. Build & Run Standalone C++ Simulator (Windows / MSVC)
+### 1. Launch the Application-Layer Telemetry Dashboard (Streamlit)
+```cmd
+streamlit run app.py
+```
+*Surfaces real-time RRC Event A3 vs Predictive decisions, live signal trajectories, and perceived application throughput in an interactive web UI.*
+
+### 2. Build & Run Standalone C++ Simulator (Windows / MSVC)
 ```cmd
 build.bat
 ```
 *(Or on Linux/WSL: `chmod +x build.sh && ./build.sh`)*
 
-### 2. Generate Matplotlib Comparison Plots
+### 3. Generate Matplotlib Comparison Plots
 ```cmd
 python scripts/plot_results.py
 ```
 
-### 3. Deploy to Real srsRAN + Open5GS in Ubuntu / WSL2
+### 4. Deploy to Real srsRAN + Open5GS in Ubuntu / WSL2
 ```bash
 chmod +x scripts/setup_wsl_srsran.sh
 ./scripts/setup_wsl_srsran.sh
@@ -163,6 +171,10 @@ chmod +x scripts/setup_wsl_srsran.sh
 
 ---
 
-## 💼 Resume Bullet
+## 💼 Resume Bullets
 
-> *Engineered predictive LTE RRC handover logic in C++ for srsRAN_4G, leveraging rolling-window OLS regression over 3GPP measurement reports to forecast signal crossover; reduced handover trigger latency by **2,000 ms** and improved serving RSRP at execution by **+3.1 dB** across high-velocity fading scenarios compared to 3GPP Event-A3 baseline on a dual-cell ZMQ-simulated network with Open5GS.*
+> - *Engineered predictive LTE RRC handover logic in C++ for srsRAN_4G, using rolling-window OLS regression over 3GPP TS 36.331 Event A3 measurement reports to forecast RSRP crossover ahead of threshold breach.*
+> - *Reduced handover trigger latency by 2.0s and improved serving RSRP at execution by +3.1 dB vs. stock Event A3 across high-velocity fading scenarios, with the standard 3GPP path retained as safety fallback.*
+> - *Validated end-to-end against live Open5GS EPC core and srsRAN_4G eNodeB/UE over ZeroMQ RF emulation — confirmed RRC Connected, NAS registration, and IP attach on real protocol stack.*
+> - *Built an application-layer dashboard surfacing RRC-layer handover decisions and predicted signal crossover in real time, translating raw 3GPP measurement data into interpretable UX to eliminate throughput collapse and RLF events.*
+
